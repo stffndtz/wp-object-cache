@@ -426,8 +426,17 @@ class WP_Object_Cache {
 			$this->mc[$bucket] = new Memcached();
 			foreach ( $servers as $server  ) {
 
+				if (strpos($server, '@') !== false) list ( $auth, $server ) = explode('@', $server);
+				else $auth = false;
+
 				list ( $node, $port ) = explode(':', $server);
 				$port = intval($port);
+
+				if ($auth) {
+					list ($username, $password) = explode(':', $auth);
+					$this->mc[$bucket]->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
+					$this->mc[$bucket]->setSaslAuthData($username, $password);
+				}
 
 				$this->mc[$bucket]->addServer($node, $port);
 
